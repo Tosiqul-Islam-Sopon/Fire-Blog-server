@@ -31,6 +31,7 @@ async function run() {
 
         const database = client.db("FireBlogDB");
         const blogCollection = database.collection("Blogs");
+        const commetCollection = database.collection("Comments");
 
         app.get("/latestBlogs", async (req, res) => {
             const result = await blogCollection.find()
@@ -50,6 +51,12 @@ async function run() {
         app.post("/addBlog", async (req, res) => {
             const blog = req.body;
             const result = await blogCollection.insertOne(blog);
+            res.send(result);
+        })
+
+        app.post("/addCommet", async (req, res) =>{
+            const commant = req.body;
+            const result = await commetCollection.insertOne(commant);
             res.send(result);
         })
         // Send a ping to confirm a successful connection
