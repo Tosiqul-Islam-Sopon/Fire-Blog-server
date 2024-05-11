@@ -80,6 +80,17 @@ async function run() {
             res.send(result);
         })
 
+        app.patch("/updateBlog/:id", async (req, res) => {
+            const blogId = req.params.id;
+            const updatedBlog = req.body;
+
+            const query = { _id: new ObjectId(blogId) };
+            const update = { $set: updatedBlog };
+
+            const result = await blogCollection.updateOne(query, update);
+            res.send(result);
+        })
+
 
         app.get("/comments/:id", async (req, res) => {
             const id = req.params.id;
@@ -96,9 +107,9 @@ async function run() {
 
 
 
-        app.get("/wishlists/:email", async (req, res) =>{
+        app.get("/wishlists/:email", async (req, res) => {
             const email = req.params.email;
-            const query = {wishlistUserEmail: {$eq: email}}
+            const query = { wishlistUserEmail: { $eq: email } }
             const result = await wishlistCollection.find(query).toArray();
             res.send(result);
         })
@@ -106,24 +117,24 @@ async function run() {
         app.post("/addWishlist", async (req, res) => {
             const wishlist = req.body;
             const blogId = wishlist.blogId;
-        
+
             const existingBlog = await wishlistCollection.findOne({ blogId: blogId });
-        
+
             if (existingBlog) {
                 return res.status(400).json({ error: "This blog is already in your wishlist." });
             }
-        
+
             const result = await wishlistCollection.insertOne(wishlist);
             res.json(result);
         });
 
-        app.delete("/wishlist/:id", async (req, res) =>{
+        app.delete("/wishlist/:id", async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await wishlistCollection.deleteOne(query);
             res.send(result);
         })
-        
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
