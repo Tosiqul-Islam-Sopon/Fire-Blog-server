@@ -94,11 +94,29 @@ async function run() {
             res.send(result);
         })
 
-        app.post("/addWishlist", async(req, res) =>{
-            const wishlist = req.body;
-            const result = await wishlistCollection.insertOne(wishlist);
+
+
+        app.get("/wishlists/:email", async (req, res) =>{
+            const email = req.params.email;
+            const query = {wishlistUserEmail: {$eq: email}}
+            const result = await wishlistCollection.find(query).toArray();
             res.send(result);
         })
+
+        app.post("/addWishlist", async (req, res) => {
+            const wishlist = req.body;
+            const blogId = wishlist.blogId;
+        
+            const existingBlog = await wishlistCollection.findOne({ blogId: blogId });
+        
+            if (existingBlog) {
+                return res.status(400).json({ error: "This blog is already in your wishlist." });
+            }
+        
+            const result = await wishlistCollection.insertOne(wishlist);
+            res.json(result);
+        });
+        
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
