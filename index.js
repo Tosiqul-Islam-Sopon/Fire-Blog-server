@@ -31,7 +31,8 @@ async function run() {
 
         const database = client.db("FireBlogDB");
         const blogCollection = database.collection("Blogs");
-        const commetCollection = database.collection("Comments");
+        const commentCollection = database.collection("Comments");
+        const wishlistCollection = database.collection("Wishlists");
 
         app.get("/latestBlogs", async (req, res) => {
             const result = await blogCollection.find()
@@ -83,13 +84,19 @@ async function run() {
         app.get("/comments/:id", async (req, res) => {
             const id = req.params.id;
             const query = { blogId: { $eq: id } };
-            const result = await commetCollection.find(query).toArray();
+            const result = await commentCollection.find(query).toArray();
             res.send(result);
         })
 
         app.post("/addCommet", async (req, res) => {
             const commant = req.body;
-            const result = await commetCollection.insertOne(commant);
+            const result = await commentCollection.insertOne(commant);
+            res.send(result);
+        })
+
+        app.post("/addWishlist", async(req, res) =>{
+            const wishlist = req.body;
+            const result = await wishlistCollection.insertOne(wishlist);
             res.send(result);
         })
         // Send a ping to confirm a successful connection
