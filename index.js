@@ -48,6 +48,31 @@ async function run() {
             res.send(result);
         })
 
+        app.get("/allBlogs", async (req, res) => {
+            const title = req.query.title;
+            const category = req.query.category;
+
+            let query = {};
+
+            if (title && category) {
+                query = {
+                    $and: [
+                        { title: { $regex: title, $options: 'i' } },
+                        { category: category }
+                    ]
+                };
+            }
+            else if (title) {
+                query = { title: { $regex: title, $options: 'i' } };
+            }
+            else if (category) {
+                query = { category: category };
+            }
+
+            const result = await blogCollection.find(query).toArray();
+            res.json(result);
+        })
+
         app.post("/addBlog", async (req, res) => {
             const blog = req.body;
             const result = await blogCollection.insertOne(blog);
