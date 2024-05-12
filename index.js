@@ -33,6 +33,7 @@ async function run() {
         const blogCollection = database.collection("Blogs");
         const commentCollection = database.collection("Comments");
         const wishlistCollection = database.collection("Wishlists");
+        const trenCollections = database.collection("TechTrends");
 
         app.get("/latestBlogs", async (req, res) => {
             const result = await blogCollection.find()
@@ -132,6 +133,13 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await wishlistCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+        app.get("/techTrends", async (req, res) =>{
+            const result = await trenCollections.find().toArray();
             res.send(result);
         })
 
