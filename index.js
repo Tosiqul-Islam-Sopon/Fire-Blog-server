@@ -34,6 +34,8 @@ async function run() {
         const commentCollection = database.collection("Comments");
         const wishlistCollection = database.collection("Wishlists");
         const trenCollections = database.collection("TechTrends");
+        const questionCollection = database.collection("Questions");
+        const replyCollection = database.collection("Replies");
 
         app.get("/latestBlogs", async (req, res) => {
             const result = await blogCollection.find()
@@ -72,7 +74,7 @@ async function run() {
             }
 
             const result = await blogCollection.find(query).toArray();
-            res.json(result);
+            res.send(result);
         })
 
         app.post("/addBlog", async (req, res) => {
@@ -126,7 +128,7 @@ async function run() {
             }
 
             const result = await wishlistCollection.insertOne(wishlist);
-            res.json(result);
+            res.send(result);
         });
 
         app.delete("/wishlist/:id", async (req, res) => {
@@ -138,10 +140,63 @@ async function run() {
 
 
 
-        app.get("/techTrends", async (req, res) =>{
+        app.get("/techTrends", async (req, res) => {
             const result = await trenCollections.find().toArray();
             res.send(result);
         })
+
+
+
+
+        app.get("/questions", async (req, res) => {
+            const questions = await questionCollection.find()
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .toArray();
+
+            res.send(questions);
+        });
+
+
+        app.get("/question/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await questionCollection.findOne(query);
+            res.send(result);
+        })
+
+
+        app.post("/askQuestion", async (req, res) => {
+            const question = req.body;
+            const result = await questionCollection.insertOne(question);
+            res.send(result);
+        });
+
+        
+        app.patch("/likeQuestion/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const update = { $inc: { likes: 1 } };
+            const result = await questionCollection.updateOne(query, update);
+            res.send(result);
+        });
+
+
+        app.get('/replies/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { questionId: { $eq: id } }
+            const result = await replyCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        app.post('/replies', async (req, res) => {
+            const reply = req.body;
+            // console.log(reply);
+            const result = await replyCollection.insertOne(reply);
+            res.send(result);
+        });
+
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
