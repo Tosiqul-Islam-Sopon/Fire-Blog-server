@@ -9,7 +9,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: [
+        'http://localhost:5173',
+        'https://fireblog-e3426.firebaseapp.com',
+        'https://fireblog-e3426.web.app',
+    ],
     credentials: true
 }));
 app.use(express.json());
@@ -40,7 +44,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         const database = client.db("FireBlogDB");
         const blogCollection = database.collection("Blogs");
         const commentCollection = database.collection("Comments");
@@ -54,13 +58,18 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.cookie('accessToken', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
             }).send({ success: true });
         });
 
         app.post("/logout", (req, res) => {
-            res.clearCookie('accessToken')
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+                maxAge: 0,
+            })
                 .send({ success: true });
         });
 
@@ -212,7 +221,7 @@ async function run() {
             res.send(result);
         });
 
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Optionally close the client when you're done
