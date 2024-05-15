@@ -107,8 +107,8 @@ async function run() {
 
         app.post("/addBlog", verifyToken, async (req, res) => {
             const blog = req.body;
-            if (blog?.uploaderEmail !== req?.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (blog?.uploaderEmail !== req?.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const result = await blogCollection.insertOne(blog);
             res.send(result);
@@ -117,8 +117,8 @@ async function run() {
         app.patch("/updateBlog/:id", verifyToken, async (req, res) => {
             const blogId = req.params.id;
             const updatedBlog = req.body;
-            if (updatedBlog?.uploaderEmail !== req?.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (updatedBlog?.uploaderEmail !== req?.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const query = { _id: new ObjectId(blogId) };
             const update = { $set: updatedBlog };
@@ -141,8 +141,8 @@ async function run() {
 
         app.get("/wishlists/:email", verifyToken, async (req, res) => {
             const email = req.params.email;
-            if (email !== req.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (email !== req.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const query = { wishlistUserEmail: email };
             const result = await wishlistCollection.find(query).toArray();
@@ -151,14 +151,17 @@ async function run() {
 
         app.post("/addWishlist", verifyToken, async (req, res) => {
             const wishlist = req.body;
-            if (wishlist?.wishlistUserEmail !== req?.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (wishlist?.wishlistUserEmail !== req?.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const blogId = wishlist.blogId;
-            const existingBlog = await wishlistCollection.findOne({ blogId });
+            const existingBlogs = await wishlistCollection.find({ blogId }).toArray();
 
-            if (existingBlog) {
-                return res.status(400).json({ error: "This blog is already in your wishlist." });
+            if (existingBlogs) {
+                const blog = existingBlogs.filter(blog => blog.wishlistUserEmail === wishlist.wishlistUserEmail);
+                if (blog.length) {
+                    return res.status(400).json({ error: "This blog is already in your wishlist." });
+                }
             }
 
             const result = await wishlistCollection.insertOne(wishlist);
@@ -190,8 +193,8 @@ async function run() {
 
         app.post("/askQuestion", verifyToken, async (req, res) => {
             const question = req.body;
-            if (question?.userEmail !== req?.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (question?.userEmail !== req?.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const result = await questionCollection.insertOne(question);
             res.send(result);
@@ -214,8 +217,8 @@ async function run() {
 
         app.post('/replies', verifyToken, async (req, res) => {
             const reply = req.body;
-            if (reply?.userEmail !== req?.user.email){
-                return res.status(403).send({message: 'forbidden access'})
+            if (reply?.userEmail !== req?.user.email) {
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const result = await replyCollection.insertOne(reply);
             res.send(result);
